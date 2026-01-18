@@ -1,0 +1,17 @@
+enum ProductType {
+  gadget
+  book
+  food
+  other
+}
+
+type Query {
+  findAvailableProducts(type: ProductType!, pageSize: Int): [Product]
+}
+
+type Product {
+  id: ID!
+  name: String!
+  inventory: Int!
+  type: ProductType!
+}
