@@ -21,8 +21,10 @@ Preconditions:
     query = 'query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }'
     } | ConvertTo-Json -Compress
 
-    Invoke-RestMethod -Method Post `
+    $resp = Invoke-RestMethod -Method Post `
     -Uri "http://localhost:9000/graphql" `
     -ContentType "application/json" `
     -Body $payload
+
+    $resp.data.findAvailableProducts | Format-List *
    ```
