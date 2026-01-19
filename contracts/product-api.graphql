@@ -7,6 +7,7 @@ enum ProductType {
 
 type Query {
   findAvailableProducts(type: ProductType!, pageSize: Int): [Product]
+  findProductById(id: ID): Product
 }
 
 type Product {

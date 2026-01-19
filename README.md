@@ -28,3 +28,33 @@ Preconditions:
 
     $resp.data.findAvailableProducts | Format-List *
    ```
+
+
+## Perform requests with Headers
+   ```bash
+   $payload = @{ query = 'query { findProductById(id: "P-300") { id name inventory type } }' } | ConvertTo-Json -Compress
+
+   $resp = Invoke-RestMethod -Method Post `
+   -Uri "http://localhost:9000/graphql" `
+   -Headers @{ "X-Tenant" = "demo" } `
+   -ContentType "application/json" `
+   -Body $payload
+
+   $resp.data.findProductById | Format-List *
+   ```
+
+## Perform requests with Variables
+   ```bash
+   $payload = @{
+   query = 'query($id: ID!) { findProductById(id: $id) { id name inventory type } }'
+   variables = @{ id = "P-300" }
+   } | ConvertTo-Json -Compress
+
+   $resp = Invoke-RestMethod -Method Post `
+   -Uri "http://localhost:9000/graphql" `
+   -Headers @{ "X-Tenant" = "demo" } `
+   -ContentType "application/json" `
+   -Body $payload
+
+   $resp.data.findProductById | Format-List *
+   ```

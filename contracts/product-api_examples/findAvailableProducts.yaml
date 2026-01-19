@@ -1,0 +1,24 @@
+request:
+  body: |
+    query {
+      findAvailableProducts(type: gadget, pageSize: 10) {
+        id
+        name
+        inventory
+        type
+      }
+    }
+
+response:
+  - id: "P-100"
+    name: "Wireless Mouse"
+    inventory: 25
+    type: gadget
+  - id: "P-200"
+    name: "USB-C Hub"
+    inventory: 10
+    type: gadget
+  - id: "P-300"
+    name: "Mouse-Hub"
+    inventory: 5
+    type: gadget

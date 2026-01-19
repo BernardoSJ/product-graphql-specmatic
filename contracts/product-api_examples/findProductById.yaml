@@ -1,0 +1,18 @@
+request:
+  httpHeaders:
+    X-Tenant: "default"
+  body: |
+    query {
+      findProductById(id: "P-300") {
+        id
+        name
+        inventory
+        type
+      }
+    }
+
+response:
+  id: "P-300"
+  name: "Mouse-Hub (TENANT default)"
+  inventory: 1
+  type: gadget
