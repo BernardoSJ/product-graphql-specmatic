@@ -1,0 +1,20 @@
+request:
+  body: |
+    query {
+      findAvailableProducts(type: gadget, pageSize: 50) {
+        id
+        name
+        inventory
+        type
+      }
+    }
+
+response:
+  - id: "P-101"
+    name: "Mechanical Keyboard"
+    inventory: 12
+    type: gadget
+  - id: "P-102"
+    name: "Gaming Mouse"
+    inventory: 8
+    type: gadget

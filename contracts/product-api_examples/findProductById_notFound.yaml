@@ -1,0 +1,22 @@
+request:
+  body: |
+    query {
+      findProductById(id: "P-404") {
+        id
+        name
+        inventory
+        type
+      }
+    }
+
+response:
+  id: "P-404"
+  name: "ERROR"
+  inventory: 0
+  type: other
+
+errors:
+  - message: "Product not found"
+    path:
+      - findProductById
+

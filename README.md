@@ -102,6 +102,21 @@ $resp.data.findProductById | Format-List *
 ```
 Even though the client sends variables, Specmatic matches the request against examples defined with inline values.
 
+## Performing Multi Field Selection
+```bash
+$payload = @{
+  query = 'query { findAvailableProducts(type: gadget, pageSize: 50) { id name } }'
+} | ConvertTo-Json -Compress
+
+$resp = Invoke-RestMethod -Method Post `
+  -Uri "http://localhost:9000/graphql" `
+  -ContentType "application/json" `
+  -Body $payload
+
+$resp.data.findAvailableProducts | Format-List *
+
+```
+
 ---
 
 ## Project Structure

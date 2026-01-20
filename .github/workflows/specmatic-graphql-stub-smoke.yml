@@ -1,0 +1,86 @@
+name: Specmatic GraphQL Stub Smoke
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  stub-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start Specmatic GraphQL stub
+        run: |
+          docker run --rm -d --name specmatic-graphql-stub \
+            -v "$PWD/contracts:/sandbox" \
+            -p 9000:9000 \
+            specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
+
+      - name: Wait for stub
+        run: |
+          for i in {1..20}; do
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/graphiql | grep -q "200"; then
+              echo "Stub is up"
+              exit 0
+            fi
+            echo "Waiting stub..."
+            sleep 1
+          done
+          echo "Stub did not start in time"
+          docker logs specmatic-graphql-stub || true
+          exit 1
+
+      - name: Smoke - findAvailableProducts
+        run: |
+          curl -sS -X POST "http://localhost:9000/graphql" \
+            -H "Content-Type: application/json" \
+            --data-raw '{"query":"query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }"}' \
+            | tee smoke_findAvailableProducts.json
+
+          # Basic assertion (adjust keys if needed)
+          grep -q '"findAvailableProducts"' smoke_findAvailableProducts.json
+
+      - name: Smoke - header based match (X-Tenant)
+        run: |
+          curl -sS -X POST "http://localhost:9000/graphql" \
+            -H "Content-Type: application/json" \
+            -H "X-Tenant: demo" \
+            --data-raw '{"query":"query { findProductById(id: \"P-300\") { id name inventory type } }"}' \
+            | tee smoke_header.json
+
+          grep -q '"findProductById"' smoke_header.json
+
+      - name: Smoke - variables request
+        run: |
+          curl -sS -X POST "http://localhost:9000/graphql" \
+            -H "Content-Type: application/json" \
+            -H "X-Tenant: demo" \
+            --data-raw '{"query":"query($id: ID!) { findProductById(id: $id) { id name inventory type } }","variables":{"id":"P-300"}}' \
+            | tee smoke_variables.json
+
+          grep -q '"findProductById"' smoke_variables.json
+
+      - name: Capture stub logs
+        if: always()
+        run: |
+          docker logs specmatic-graphql-stub > specmatic_stub.log || true
+
+      - name: Upload smoke outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: specmatic-graphql-smoke-artifacts
+          path: |
+            smoke_findAvailableProducts.json
+            smoke_header.json
+            smoke_variables.json
+            specmatic_stub.log
+
+      - name: Stop stub
+        if: always()
+        run: |
+          docker rm -f specmatic-graphql-stub || true
