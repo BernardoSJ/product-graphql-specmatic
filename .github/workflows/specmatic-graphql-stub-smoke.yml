@@ -20,19 +20,26 @@ jobs:
             -p 9000:9000 \
             specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
 
-      - name: Wait for stub
+      - name: Wait for stub (POST /graphql)
         run: |
-          for i in {1..20}; do
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost:9000/graphiql | grep -q "200"; then
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              -X POST http://localhost:9000/graphql \
+              -H "Content-Type: application/json" \
+              --data-raw '{"query":"query { __typename }"}' || true)
+
+            if [ "$code" = "200" ]; then
               echo "Stub is up"
               exit 0
             fi
-            echo "Waiting stub..."
+
+            echo "Waiting stub... (HTTP $code)"
             sleep 1
           done
           echo "Stub did not start in time"
           docker logs specmatic-graphql-stub || true
           exit 1
+
 
       - name: Smoke - findAvailableProducts
         run: |
