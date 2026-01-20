@@ -1,64 +1,128 @@
-# Product Hub GraphQL + Specmatic
+# Product Hub – GraphQL Contract Testing with Specmatic
 
-This project contains a example of contract testing implementing GraphQL + Specmatic. All the project was created with powershell. In order to see this working you need to follow the next steps:
+This project is an example of **contract testing using GraphQL and Specmatic**.  
+It demonstrates how to virtualize a GraphQL API using a schema-first approach and how to test different request scenarios such as headers, variables, and deterministic responses.
 
-Preconditions:
-* Have Docker installed within your computer
+All commands and examples were created and executed using **Windows PowerShell**.
 
-1. **Clone or download the repository:**
-   ```bash
-   git clone https://github.com/BernardoSJ/product-graphql-specmatic.git
-   ```
-2. **Navigate to the project folder and start the stub with Docker:**
-   ```bash
-   cd gadgethub-contract-testing-project
-   
-   docker run --rm -v "${PWD}\contracts:/sandbox" -p 9000:9000 specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
-   ```
-3. **Make sure the stub is executing with the Invoke-RestMethod**
-   ```bash
-   $payload = @{
-    query = 'query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }'
-    } | ConvertTo-Json -Compress
+---
 
-    $resp = Invoke-RestMethod -Method Post `
-    -Uri "http://localhost:9000/graphql" `
-    -ContentType "application/json" `
-    -Body $payload
+## Prerequisites
 
-    $resp.data.findAvailableProducts | Format-List *
-   ```
-3.1 **Execute a call using curl command withing CMD**
-    ```bash
-    curl -X POST http://localhost:9090/graphql -H "Content-Type: application/json" -d "{ \"query\": \"query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }\" }"
-    ```
+- Docker installed and running
+- Git (optional, for cloning the repository)
 
+---
 
-## Perform requests with Headers
-   ```bash
-   $payload = @{ query = 'query { findProductById(id: "P-300") { id name inventory type } }' } | ConvertTo-Json -Compress
+## Getting Started
 
-   $resp = Invoke-RestMethod -Method Post `
-   -Uri "http://localhost:9000/graphql" `
-   -Headers @{ "X-Tenant" = "demo" } `
-   -ContentType "application/json" `
-   -Body $payload
+### 1. Clone the repository
 
-   $resp.data.findProductById | Format-List *
-   ```
+```bash
+git clone https://github.com/BernardoSJ/product-graphql-specmatic.git
+```
 
-## Perform requests with Variables
-   ```bash
-   $payload = @{
-   query = 'query($id: ID!) { findProductById(id: $id) { id name inventory type } }'
-   variables = @{ id = "P-300" }
-   } | ConvertTo-Json -Compress
+### 2. Navigate to the project folder and start the GraphQL stub
 
-   $resp = Invoke-RestMethod -Method Post `
-   -Uri "http://localhost:9000/graphql" `
-   -Headers @{ "X-Tenant" = "demo" } `
-   -ContentType "application/json" `
-   -Body $payload
+```bash
+cd product-graphql-specmatic
 
-   $resp.data.findProductById | Format-List *
-   ```
+docker run --rm -v "${PWD}\contracts:/sandbox" -p 9000:9000 specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
+```
+
+This command:
+
+* Loads the GraphQL SDL (product-api.graphql)
+* Starts a stub server on port 9000
+* Automatically uses the examples located in product-api_examples
+
+## Verify the Stub is Running (PowerShell)
+
+Use ```text Invoke-RestMethod``` to send a GraphQL POST request: 
+
+```bash
+$payload = @{
+  query = 'query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }'
+} | ConvertTo-Json -Compress
+
+$resp = Invoke-RestMethod -Method Post `
+  -Uri "http://localhost:9000/graphql" `
+  -ContentType "application/json" `
+  -Body $payload
+
+$resp.data.findAvailableProducts | Format-List *
+```
+You should receive a deterministic response based on the defined Specmatic examples.
+
+## Verify Using curl (CMD)
+
+If you prefer using ```text curl``` from **Command Prompt (CMD)**: 
+
+```bash
+curl -X POST http://localhost:9000/graphql ^
+  -H "Content-Type: application/json" ^
+  -d "{\"query\":\"query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }\"}"
+```
+
+## Performing Requests with Headers
+
+This example demonstrates how Specmatic can differentiate responses based on HTTP headers.
+
+```bash
+$payload = @{
+  query = 'query { findProductById(id: "P-300") { id name inventory type } }'
+} | ConvertTo-Json -Compress
+
+$resp = Invoke-RestMethod -Method Post `
+  -Uri "http://localhost:9000/graphql" `
+  -Headers @{ "X-Tenant" = "demo" } `
+  -ContentType "application/json" `
+  -Body $payload
+
+$resp.data.findProductById | Format-List *
+```
+
+## Performing Requests with Variables
+
+This example shows how GraphQL requests using variables are handled by the stub:
+
+```bash
+$payload = @{
+  query = 'query($id: ID!) { findProductById(id: $id) { id name inventory type } }'
+  variables = @{ id = "P-300" }
+} | ConvertTo-Json -Compress
+
+$resp = Invoke-RestMethod -Method Post `
+  -Uri "http://localhost:9000/graphql" `
+  -Headers @{ "X-Tenant" = "demo" } `
+  -ContentType "application/json" `
+  -Body $payload
+
+$resp.data.findProductById | Format-List *
+```
+Even though the client sends variables, Specmatic matches the request against examples defined with inline values.
+
+---
+
+## Project Structure
+
+```text
+product-graphql-specmatic
+ ├──contracts/
+ ├──product-api.graphql
+ ├──product-api_examples/
+     ├──findAvailableProducts.yaml
+     ├──findProductById.yaml
+     ├──findProductById_with_headers.yaml
+```
+
+## Key Concepts Demonstrated
+* GraphQL service virtualization using Specmatic
+* Schema-first contract testing
+* Deterministic responses using examples
+* Header-based request matching
+* Variable-based GraphQL queries
+
+## Notes
+This project focuses on stub-based contract testing and virtualization.
+Provider-side contract tests can be added as a next step.
