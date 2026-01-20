@@ -1,0 +1,12 @@
+request:
+  body: |
+    query {
+      findProductById(id: "P-404") {
+        id
+        name
+        inventory
+        type
+      }
+    }
+
+response: ~

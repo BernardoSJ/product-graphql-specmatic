@@ -28,6 +28,10 @@ Preconditions:
 
     $resp.data.findAvailableProducts | Format-List *
    ```
+3.1 **Execute a call using curl command withing CMD**
+    ```bash
+    curl -X POST http://localhost:9090/graphql -H "Content-Type: application/json" -d "{ \"query\": \"query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }\" }"
+    ```
 
 
 ## Perform requests with Headers

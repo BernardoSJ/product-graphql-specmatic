@@ -1,0 +1,18 @@
+request:
+  body: |
+    query {
+      findAvailableProducts(type: gadget, pageSize: 5) {
+        id
+        name
+        inventory
+        type
+      }
+    }
+
+delay-in-milliseconds: 3000
+
+response:
+  - id: "P-999"
+    name: "Slow Product"
+    inventory: 1
+    type: gadget
