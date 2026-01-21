@@ -1,9 +1,26 @@
 # Product Hub – GraphQL Contract Testing with Specmatic
 
-This project is an example of **contract testing using GraphQL and Specmatic**.  
-It demonstrates how to virtualize a GraphQL API using a schema-first approach and how to test different request scenarios such as headers, variables, and deterministic responses.
+This repository demonstrates **GraphQL contract testing and service virtualization using Specmatic.**
 
-All commands and examples were created and executed using **Windows PowerShell**.
+The project follows a **schema-first approach**, where a GraphQL SDL is used as the single source of truth to generate a stub server with deterministic responses.
+It showcases how consumers can validate their integrations against a virtualized GraphQL API without relying on a live backend.
+
+All commands and examples were executed using **Windows PowerShell**, but the same concepts apply to any OS.
+
+---
+
+## Why This Project Exists
+This project aims to demonstrate:
+* How to virtualize a GraphQL API using contracts
+* How to define deterministic responses using Specmatic examples
+* How to validate consumer behavior using headers, variables, and query shapes
+* How to run GraphQL contract stubs locally and in CI pipelines
+
+This setup is especially useful for:
+* Early consumer development
+* Integration testing
+* Contract-driven development (CDD)
+* CI smoke validation without backend dependencies
 
 ---
 
@@ -30,15 +47,17 @@ cd product-graphql-specmatic
 docker run --rm -v "${PWD}\contracts:/sandbox" -p 9000:9000 specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
 ```
 
-This command:
+This command will:
 
-* Loads the GraphQL SDL (product-api.graphql)
-* Starts a stub server on port 9000
-* Automatically uses the examples located in product-api_examples
+* Load the GraphQL SDL (```product-api.graphql```)
+* Read all example files from ```product-api_examples```
+* Start a GraphQL stub server on port **9000**
+* Expose the ```/graphql``` endpoint for POST requests
+ 💡 To use a different port, map it as ```PORT:9000```.
 
 ## Verify the Stub is Running (PowerShell)
 
-Use ```text Invoke-RestMethod``` to send a GraphQL POST request: 
+Use ```Invoke-RestMethod``` to send a GraphQL POST request: 
 
 ```bash
 $payload = @{
@@ -52,11 +71,11 @@ $resp = Invoke-RestMethod -Method Post `
 
 $resp.data.findAvailableProducts | Format-List *
 ```
-You should receive a deterministic response based on the defined Specmatic examples.
+You should receive a **deterministic response** based on the defined Specmatic examples.
 
 ## Verify Using curl (CMD)
 
-If you prefer using ```text curl``` from **Command Prompt (CMD)**: 
+If you prefer using ```curl``` from **Command Prompt (CMD)**: 
 
 ```bash
 curl -X POST http://localhost:9000/graphql ^
@@ -64,9 +83,9 @@ curl -X POST http://localhost:9000/graphql ^
   -d "{\"query\":\"query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }\"}"
 ```
 
-## Performing Requests with Headers
+## Requests with Header-Based Matching
 
-This example demonstrates how Specmatic can differentiate responses based on HTTP headers.
+Specmatic can return different responses depending on HTTP headers.
 
 ```bash
 $payload = @{
@@ -82,9 +101,11 @@ $resp = Invoke-RestMethod -Method Post `
 $resp.data.findProductById | Format-List *
 ```
 
-## Performing Requests with Variables
+This demonstrates **header-based contract matching.**
 
-This example shows how GraphQL requests using variables are handled by the stub:
+## Requests Using GraphQL Variables
+
+GraphQL queries with variables are also supported:
 
 ```bash
 $payload = @{
@@ -100,9 +121,12 @@ $resp = Invoke-RestMethod -Method Post `
 
 $resp.data.findProductById | Format-List *
 ```
-Even though the client sends variables, Specmatic matches the request against examples defined with inline values.
+Although the client uses variables, Specmatic matches the request against example-based contracts.
 
-## Performing Multi Field Selection
+## Partial Field Selection
+
+GraphQL field selection is flexible and does not break contract matching:
+
 ```bash
 $payload = @{
   query = 'query { findAvailableProducts(type: gadget, pageSize: 50) { id name } }'
@@ -116,6 +140,47 @@ $resp = Invoke-RestMethod -Method Post `
 $resp.data.findAvailableProducts | Format-List *
 
 ```
+
+## Delayed Responses (Latency Simulation)
+
+```bash
+$payload = @{ query = 'query { findAvailableProducts(type: gadget, pageSize: 5) { id name inventory type } }' } | ConvertTo-Json -Compress
+
+Measure-Command {
+  Invoke-RestMethod -Method Post `
+    -Uri "http://localhost:9000/graphql" `
+    -ContentType "application/json" `
+    -Body $payload
+}
+
+```
+This request will intentionally delay the response (e.g. 3 seconds) as defined in the example file.
+
+## Error Handling Strategy
+
+Due to current limitations in the ```specmatic/specmatic-graphql``` container:
+
+* Native GraphQL ```errors {}``` blocks are **not emitted**
+* Negative scenarios are modeled using **schema-compliant sentinel responses** (e.g. ```NOT_FOUND``` objects)
+This allows consumers to test failure paths while remaining contract-compliant.
+
+---
+
+## GitHub Actions - CI Integration
+This repository includes a **GitHub Actions workflow** that runs a smoke validation against the GraphQL stub.
+
+**Workflow details:**
+
+* Name: **Specmatic GraphQL Stub Smoke**
+* Triggers:
+   * push
+   * pull_request
+   * workflow_dispatch
+
+**Artifacts generated:**
+
+* Stub server logs
+* JSON responses from smoke requests
 
 ---
 
@@ -132,12 +197,18 @@ product-graphql-specmatic
 ```
 
 ## Key Concepts Demonstrated
-* GraphQL service virtualization using Specmatic
+* GraphQL service virtualization
 * Schema-first contract testing
-* Deterministic responses using examples
-* Header-based request matching
+* Deterministic stub responses
+* Header-based matching
 * Variable-based GraphQL queries
+* Latency simulation
+* Consumer-side CI validation
 
-## Notes
-This project focuses on stub-based contract testing and virtualization.
-Provider-side contract tests can be added as a next step.
+## Scope and Limitations
+This project focuses on **stub-based contract testing** for consumers.
+* Provider-side contract verification is out of scope
+* Real backend integration is intentionally excluded
+* Designed for learning, demos, and portfolio usage
+
+Provider verification can be added as a future enhancement.
