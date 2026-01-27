@@ -1,0 +1,23 @@
+schema {
+  query: Query
+    mutation: Mutation
+}
+
+enum ProductType {
+  gadget
+  book
+  food
+  other
+}
+
+type Query {
+  findAvailableProductsV2(type: ProductType!, pageSize: Int): [Product]
+  productByIdV2(id: ID!): Product
+}
+
+type Product {
+  id: ID!
+  name: String!
+  inventory: Int!
+  type: ProductType!
+}

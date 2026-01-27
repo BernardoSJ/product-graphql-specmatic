@@ -55,6 +55,12 @@ This command will:
 * Expose the ```/graphql``` endpoint for POST requests
  💡 To use a different port, map it as ```PORT:9000```.
 
+In case you want to validate the one with specmatic.yaml in the root folder use this command:
+
+```bash
+docker run -v "$PWD/product-api-v2.graphql:/usr/src/app/product-api-v2.graphql" -v "$PWD/examples:/usr/src/app/examples" -v "$PWD/specmatic.yaml:/usr/src/app/specmatic.yaml" -p 9000:9000 specmatic/specmatic-graphql virtualize --port=9000 --examples=examples
+```
+
 ## Verify the Stub is Running (PowerShell)
 
 Use ```Invoke-RestMethod``` to send a GraphQL POST request: 
@@ -81,6 +87,14 @@ If you prefer using ```curl``` from **Command Prompt (CMD)**:
 curl -X POST http://localhost:9000/graphql ^
   -H "Content-Type: application/json" ^
   -d "{\"query\":\"query { findAvailableProducts(type: gadget, pageSize: 10) { id name inventory type } }\"}"
+```
+
+In case for the example in the root folder please use this command:
+
+```bash
+curl -X POST http://localhost:9000/graphql ^
+     -H "Content-Type: application/json" \ ^
+     -d "{\"query\":\"query { findAvailableProductsV2(type: gadget, pageSize: 10) { id name } }\"}"
 ```
 
 ## Requests with Header-Based Matching

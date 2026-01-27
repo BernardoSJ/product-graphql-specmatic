@@ -1,0 +1,24 @@
+   request:
+     body: |
+       query {
+         findAvailableProductsV2(type: gadget, pageSize: 10) {
+           id
+           name
+           inventory
+           type
+         }
+       }
+   response: [
+       {
+           "id": "10",
+           "name": "The Almanac",
+           "inventory": 10,
+           "type": "book"
+       },
+       {
+           "id": "20",
+           "name": "iPhone",
+           "inventory": 15,
+           "type": "gadget"
+       }
+   ]

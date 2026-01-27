@@ -1,0 +1,14 @@
+request:
+  body: |
+    query {
+      productByIdV2(id: "10") {
+        id
+        name
+        type
+      }
+    }
+response: {
+    "id": "10",
+    "name": "The Almanac",
+    "type": "book"
+}
