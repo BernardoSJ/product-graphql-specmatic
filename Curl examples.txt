@@ -1,0 +1,7 @@
+curl -sS -X POST "http://localhost:9094/graphql" -H "Content-Type: application/json"  --data-raw "{\"query\":\"query { products: findAvailableProductsV2(type: gadget, pageSize: 10) { id name } product: productByIdV2(id: \\\"10\\\") { id name } }\"}"
+
+
+
+curl -X POST http://localhost:9094/graphql -H "Content-Type: application/json" -d "{\"query\": \"query($type: ProductType!, $pageSize: Int, $id: ID!) { findAvailableProductsV2(type: $type, pageSize: $pageSize) { id name inventory type } productByIdV2(id: $id) { id name type } }\", \"variables\": {\"type\": \"gadget\", \"pageSize\": 10, \"id\": \"10\"}}"
+
+curl -sS -X POST http://localhost:9094/graphql -H "Content-Type: application/json" -d "{\"query\":\"query($type: ProductType!, $pageSize: Int){ findAvailableProductsV2(type: $type, pageSize: $pageSize){ id name inventory type } }\",\"variables\":{\"type\":\"gadget\",\"pageSize\":10}}"

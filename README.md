@@ -92,8 +92,8 @@ curl -X POST http://localhost:9000/graphql ^
 In case for the example in the root folder please use this command:
 
 ```bash
-curl -X POST http://localhost:9000/graphql ^
-     -H "Content-Type: application/json" \ ^
+curl -X POST http://localhost:9094/graphql ^
+     -H "Content-Type: application/json"  ^
      -d "{\"query\":\"query { findAvailableProductsV2(type: gadget, pageSize: 10) { id name } }\"}"
 ```
 
