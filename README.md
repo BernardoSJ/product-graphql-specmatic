@@ -39,12 +39,14 @@ This setup is especially useful for:
 git clone https://github.com/BernardoSJ/product-graphql-specmatic.git
 ```
 
-### 2. Navigate to the project folder and start the GraphQL stub
+### 2. Navigate to the project folder, create a folder called "reports" and start the GraphQL stub
 
 ```bash
 cd product-graphql-specmatic
 
-docker run --rm -v "${PWD}\contracts:/sandbox" -p 9000:9000 specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
+mkdir reports -Force | Out-Null
+
+docker run --rm -v "${PWD}\contracts:/sandbox" v "${PWD}\reports:/usr/src/app/build/reports" -p 9000:9000 specmatic/specmatic-graphql virtualize /sandbox/product-api.graphql
 ```
 
 This command will:
